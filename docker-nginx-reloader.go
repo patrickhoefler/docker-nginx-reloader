@@ -1,4 +1,4 @@
-package main // import "github.com/patrickhoefler/docker-nginx-reloader/src"
+package main
 
 import (
 	"fmt"
@@ -9,8 +9,8 @@ import (
 	"github.com/fsouza/go-dockerclient"
 )
 
+// Command line flags
 var (
-	// Command line flags
 	flHost     = mflag.String([]string{"H", "-host"}, "unix:///var/run/docker.sock", "The Docker socket to connect to, specified using tcp://host:port or unix:///path/to/socket.")
 	flFragment = mflag.String([]string{"-fragment"}, "nginx", "All Docker containers whose names contains this fragement will receive the SIGHUP signal.")
 	flVersion  = mflag.Bool([]string{"v", "-version"}, false, "Print the version of docker-nginx-reloader.")

@@ -1,9 +1,6 @@
 {
 	"ImportPath": "github.com/patrickhoefler/docker-nginx-reloader",
 	"GoVersion": "go1.4",
-	"Packages": [
-		"./src"
-	],
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -12,47 +9,47 @@
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/archive",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/fileutils",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/ioutils",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/mflag",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/pools",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/promise",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/pkg/system",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/docker/docker/vendor/src/code.google.com/p/go/src/pkg/archive/tar",
-			"Comment": "v1.4.1-140-g67e3435",
-			"Rev": "67e34350b7eaed3f517a524c012ff8284cde09b2"
+			"Comment": "v1.4.1-175-g8412e3c",
+			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
-			"Rev": "77d44de354d4cb20ad5b03a9e118dc203e59095b"
+			"Rev": "b52383442df766febf51f9f858ee311f69a2f264"
 		}
 	]
 }
