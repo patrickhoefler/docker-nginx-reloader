@@ -1,0 +1,4 @@
+language: go
+
+# Run on the new AWS/Docker-based Travis CI infrastructure
+sudo: false
