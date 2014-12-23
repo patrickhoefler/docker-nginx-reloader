@@ -1,4 +1,7 @@
+sudo: false # Run on the new AWS/Docker-based Travis CI infrastructure
 language: go
+go:
+  - tip
 
-# Run on the new AWS/Docker-based Travis CI infrastructure
-sudo: false
+before_install:
+  - go get github.com/kr/godep
