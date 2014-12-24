@@ -5,3 +5,4 @@ go:
 
 before_install:
   - go get github.com/kr/godep
+  - go get -v
