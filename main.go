@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/docker/docker/pkg/mflag"
@@ -14,9 +13,6 @@ var (
 	flHost     = mflag.String([]string{"H", "-host"}, "unix:///var/run/docker.sock", "The Docker socket to connect to, specified using tcp://host:port or unix:///path/to/socket.")
 	flFragment = mflag.String([]string{"-fragment"}, "nginx", "All running Docker containers whose names contains this fragement will receive the SIGHUP signal.")
 	flVersion  = mflag.Bool([]string{"v", "-version"}, false, "Print the version of docker-nginx-reloader and exit.")
-
-	// Minimalistic log for fatal error messages
-	fatalLog = log.New(os.Stderr, "", 0)
 )
 
 func init() {
@@ -38,13 +34,15 @@ func main() {
 	// Get a Docker client
 	client, err := docker.NewClient(*flHost)
 	if err != nil {
-		fatalLog.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	// Get a list of all running Docker containers
 	containers, err := client.ListContainers(docker.ListContainersOptions{All: true})
 	if err != nil {
-		fatalLog.Fatal(err)
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
 
 	for _, container := range containers {
