@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/docker/docker/pkg/mflag"
 	"github.com/fsouza/go-dockerclient"
@@ -39,21 +40,35 @@ func main() {
 	}
 
 	// Get a list of all running Docker containers
-	containers, err := client.ListContainers(docker.ListContainersOptions{All: true})
+	containers, err := client.ListContainers(docker.ListContainersOptions{})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
 	for _, container := range containers {
-		fmt.Println("ID: ", container.ID)
-		fmt.Println("Image: ", container.Image)
-		fmt.Println("Command: ", container.Command)
-		fmt.Println("Created: ", container.Created)
-		fmt.Println("Status: ", container.Status)
-		fmt.Println("Ports: ", container.Ports)
-	}
 
-	// Send the SIGHUP signal to all matching containers
-	fmt.Println(*flFragment)
+		for _, containerName := range container.Names {
+
+			matched, err := regexp.MatchString(*flFragment, containerName)
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+
+			if matched {
+				client.KillContainer(
+					docker.KillContainerOptions{
+						ID:     container.ID,
+						Signal: docker.SIGHUP,
+					},
+				)
+				fmt.Printf(
+					"Sent SIGHUP signal to %s (%s)\n",
+					containerName[1:],
+					container.ID,
+				)
+			}
+		}
+	}
 }
