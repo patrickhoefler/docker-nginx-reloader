@@ -1,4 +1,3 @@
 .git
-bin/docker-nginx-reloader
 Godeps
 testing
