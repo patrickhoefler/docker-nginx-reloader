@@ -11,7 +11,7 @@ import (
 
 func main() {
 	const (
-		version = "0.1.0-beta1"
+		version = "0.1.0-beta2"
 	)
 
 	var (
