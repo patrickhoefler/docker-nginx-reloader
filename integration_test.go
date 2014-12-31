@@ -3,108 +3,72 @@
 package main
 
 import (
-	"flag"
-	"log"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestMain(m *testing.M) {
-	// Manually parse the command line flags to get
-	// access to testing.Verbose() outside of m.Run()
-	flag.Parse()
-
-	// Test setup
-	setup()
-
-	// Run the tests and exit
-	os.Exit(m.Run())
-}
-
-func setup() {
-	if testing.Verbose() {
-		log.Println("Building docker-nginx-reloader")
-	}
-	os.Setenv("GOOS", "linux")
-	os.Setenv("GOARCH", "amd64")
-	runCommand("go build -v")
-
-	if testing.Verbose() {
-		log.Println("Building patrickhoefler/nginx-debug image")
-	}
-	runCommand("docker build --tag=patrickhoefler/nginx-debug testing/nginx-debug")
-
-	if testing.Verbose() {
-		log.Println("Building patrickhoefler/docker-nginx-reloader image")
-	}
-	runCommand("docker build --tag=patrickhoefler/docker-nginx-reloader .")
-
-	if testing.Verbose() {
-		log.Println("Removing untagged Docker images")
-	}
-	danglingImages := runCommand("docker images -q --filter=dangling=true")
-	for _, danglingImage := range strings.Split(danglingImages, "\n") {
-		runCommandThatMayFail("docker rmi " + danglingImage)
-	}
-}
-
-func runCommand(command string) string {
+func runCommand(command string) (string, error) {
 	splitCommand := strings.Split(command, " ")
 	output, err := exec.Command(splitCommand[0], splitCommand[1:]...).CombinedOutput()
-	if err != nil {
-		log.Println(string(output))
-		log.Fatal(err)
-	}
-	return string(output)
+	return string(output), err
 }
 
-func runCommandThatMayFail(command string) string {
-	splitCommand := strings.Split(command, " ")
-	output, err := exec.Command(splitCommand[0], splitCommand[1:]...).CombinedOutput()
-	if testing.Verbose() && err != nil {
-		log.Println(string(output))
-		log.Println(err)
-	}
-	return string(output)
-}
+func TestIntegrationWithDockerClient(t *testing.T) {
+	Convey("Given the main binary is built and all Docker images are built and started", t, func() {
+		//Build main binary
+		os.Setenv("GOOS", "linux")
+		os.Setenv("GOARCH", "amd64")
+		runCommand("go build -v")
 
-func runTestCommand(t *testing.T, command string) string {
-	splitCommand := strings.Split(command, " ")
-	output, err := exec.Command(splitCommand[0], splitCommand[1:]...).CombinedOutput()
-	t.Log(string(output))
-	if err != nil {
-		t.Error(err)
-	}
-	return string(output)
-}
+		// Build docker image for main binary
+		runCommand("docker build --tag=patrickhoefler/docker-nginx-reloader .")
 
-func runIntegrationTest(t *testing.T, dockerCommand string) {
-	// Make sure that a potentially leftover nginx-debug container is removed
-	runCommandThatMayFail("docker rm --force nginx-debug")
+		// Build nginx docker image with debugging enable
+		runCommand("docker build --tag=patrickhoefler/nginx-debug testing/nginx-debug")
 
-	// Start nginx-debug container
-	runTestCommand(t, "docker run --name=nginx-debug --detach patrickhoefler/nginx-debug")
+		// Remove untagged Docker images
+		danglingImages, _ := runCommand("docker images -q --filter=dangling=true")
+		for _, danglingImage := range strings.Split(strings.TrimSpace(danglingImages), "\n") {
+			runCommand("docker rmi " + danglingImage)
+		}
 
-	// Always remove nginx-debug container
-	defer runTestCommand(t, "docker rm --force nginx-debug")
+		// Start containers
+		runCommand("docker run --name=nginx-debug --detach patrickhoefler/nginx-debug")
+		runCommand("docker run --name=gubed-xnign --detach patrickhoefler/nginx-debug")
 
-	// Run docker-nginx-reloader
-	runTestCommand(t, dockerCommand)
+		Convey("When docker-nginx-reloader is run without any command line flags", func() {
+			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader")
 
-	output := runTestCommand(t, "docker logs nginx-debug")
-	if strings.Index(output, "signal 1 (SIGHUP) received") < 0 {
-		t.Error("nginx didn't receive the SIGHUP signal")
-	}
-}
+			Convey("One of the two containers should be restarted", func() {
+				output, _ := runCommand("docker logs nginx-debug")
+				So(output, ShouldContainSubstring, "signal 1 (SIGHUP) received")
 
-func TestWithoutFlags(t *testing.T) {
-	// Run docker-nginx-reloader without flags
-	runIntegrationTest(t, "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader")
-}
+				output, _ = runCommand("docker logs gubed-xnign")
+				So(output, ShouldNotContainSubstring, "signal 1 (SIGHUP) received")
+			})
+		})
 
-func TestWithCustomFragment(t *testing.T) {
-	// Run docker-nginx-reloader with fragment flag
-	runIntegrationTest(t, "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader /docker-nginx-reloader --fragment=debug")
+		Convey("When docker-nginx-reloader is run with the fragment flag", func() {
+			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader /docker-nginx-reloader --fragment=debug")
+
+			Convey("One of the two containers should be restarted", func() {
+				output, _ := runCommand("docker logs nginx-debug")
+				So(output, ShouldContainSubstring, "signal 1 (SIGHUP) received")
+
+				output, _ = runCommand("docker logs gubed-xnign")
+				So(output, ShouldNotContainSubstring, "signal 1 (SIGHUP) received")
+			})
+		})
+
+		Reset(func() {
+			// This reset is run after each `Convey` at the same scope.
+			// Stop and remove containers
+			runCommand("docker rm --force nginx-debug")
+			runCommand("docker rm --force gubed-xnign")
+		})
+	})
 }
