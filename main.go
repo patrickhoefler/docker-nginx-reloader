@@ -3,16 +3,16 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
 	"github.com/fsouza/go-dockerclient"
 )
 
-func main() {
-	const (
-		version = "0.1.0-beta2"
-	)
+const (
+	version = "0.1.0-beta3"
+)
 
 var (
 	// Flags
@@ -20,6 +20,9 @@ var (
 	fragment    string
 	versionFlag bool
 
+	// Used for testing
+	stdout io.Writer = os.Stdout
+)
 
 func init() {
 	// Flags
@@ -28,19 +31,32 @@ func init() {
 	flag.BoolVar(&versionFlag, "version", false, "Print the version of docker-nginx-reloader and exit.")
 }
 
-	if *printVersion {
-		fmt.Fprintln(os.Stdout, version)
-		os.Exit(0)
-	}
+func main() {
 	flag.Parse()
 
-	// Get a Docker client
-	client, err := docker.NewClient(*host)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
+	// Does the user only want the version?
+	if versionFlag {
+		fmt.Fprintln(stdout, version)
+	} else {
 
+		// Get a Docker client
+		client, err := docker.NewClient(host)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
+		// Reload the matching containers
+		reloadContainers(client)
+	}
+}
+
+type dockerManager interface {
+	ListContainers(docker.ListContainersOptions) ([]docker.APIContainers, error)
+	KillContainer(docker.KillContainerOptions) error
+}
+
+func reloadContainers(client dockerManager) {
 	// Get a list of all running Docker containers
 	containers, err := client.ListContainers(docker.ListContainersOptions{})
 	if err != nil {
@@ -52,14 +68,15 @@ func init() {
 
 		for _, containerName := range container.Names {
 
-			if strings.Index(containerName, *fragment) >= 0 {
+			if strings.Index(containerName, fragment) >= 0 {
 				client.KillContainer(
 					docker.KillContainerOptions{
 						ID:     container.ID,
 						Signal: docker.SIGHUP,
 					},
 				)
-				fmt.Printf(
+				fmt.Fprintf(
+					stdout,
 					"Sent SIGHUP signal to %s (%s)\n",
 					containerName[1:],
 					container.ID,
