@@ -45,6 +45,15 @@
 		{
 			"ImportPath": "github.com/fsouza/go-dockerclient",
 			"Rev": "b52383442df766febf51f9f858ee311f69a2f264"
+		},
+		{
+			"ImportPath": "github.com/jtolds/gls",
+			"Rev": "f1ac7f4f24f50328e6bc838ca4437d1612a0243c"
+		},
+		{
+			"ImportPath": "github.com/smartystreets/goconvey/convey",
+			"Comment": "1.5.0-354-gc6ec870",
+			"Rev": "c6ec870bb119ebb448ec8800fed2b04000f6984c"
 		}
 	]
 }
