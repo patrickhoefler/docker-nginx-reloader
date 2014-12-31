@@ -1,11 +1,11 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/docker/docker/pkg/mflag"
 	"github.com/fsouza/go-dockerclient"
 )
 
@@ -14,24 +14,25 @@ func main() {
 		version = "0.1.0-beta2"
 	)
 
-	var (
-		host         = mflag.String([]string{"H", "-host"}, "unix:///var/run/docker.sock", "The Docker socket to connect to, specified using tcp://host:port or unix:///path/to/socket.")
-		fragment     = mflag.String([]string{"-fragment"}, "nginx", "All running Docker containers whose names contains this fragement will receive the SIGHUP signal.")
-		printVersion = mflag.Bool([]string{"v", "-version"}, false, "Print the version of docker-nginx-reloader and exit.")
-	)
+var (
+	// Flags
+	host        string
+	fragment    string
+	versionFlag bool
 
-	mflag.Usage = func() {
-		message := "usage: docker-nginx-reloader [options]\n\nSends a SIGHUP signal to all running Docker containers whose name contains the given fragment.\n\nOptions:\n"
-		fmt.Fprint(os.Stderr, message)
-		mflag.PrintDefaults()
-	}
 
-	mflag.Parse()
+func init() {
+	// Flags
+	flag.StringVar(&fragment, "fragment", "nginx", "All running Docker containers whose names contain this fragement will receive the SIGHUP signal.")
+	flag.StringVar(&host, "host", "unix:///var/run/docker.sock", "The Docker socket to connect to, specified using tcp://host:port or unix:///path/to/socket.")
+	flag.BoolVar(&versionFlag, "version", false, "Print the version of docker-nginx-reloader and exit.")
+}
 
 	if *printVersion {
 		fmt.Fprintln(os.Stdout, version)
 		os.Exit(0)
 	}
+	flag.Parse()
 
 	// Get a Docker client
 	client, err := docker.NewClient(*host)

@@ -23,11 +23,6 @@
 			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
 		},
 		{
-			"ImportPath": "github.com/docker/docker/pkg/mflag",
-			"Comment": "v1.4.1-175-g8412e3c",
-			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
-		},
-		{
 			"ImportPath": "github.com/docker/docker/pkg/pools",
 			"Comment": "v1.4.1-175-g8412e3c",
 			"Rev": "8412e3c226d870c6c156a6ba7a1773e025b29560"
