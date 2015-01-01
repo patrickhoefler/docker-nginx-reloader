@@ -43,7 +43,7 @@ func TestIntegrationWithDockerClient(t *testing.T) {
 		Convey("When docker-nginx-reloader is run without any command line flags", func() {
 			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader")
 
-			Convey("One of the two containers should be restarted", func() {
+			Convey("nginx-debug should be reloaded, but gubed-xnign should not", func() {
 				output, _ := runCommand("docker logs nginx-debug")
 				So(output, ShouldContainSubstring, "signal 1 (SIGHUP) received")
 
@@ -52,15 +52,15 @@ func TestIntegrationWithDockerClient(t *testing.T) {
 			})
 		})
 
-		Convey("When docker-nginx-reloader is run with the fragment flag", func() {
-			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader /docker-nginx-reloader --fragment=debug")
+		Convey("When docker-nginx-reloader is run with the command line flag --fragment=xnign", func() {
+			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader /docker-nginx-reloader --fragment=xnign")
 
-			Convey("One of the two containers should be restarted", func() {
+			Convey("nginx-debug should not be reloaded, but gubed-xnign should", func() {
 				output, _ := runCommand("docker logs nginx-debug")
-				So(output, ShouldContainSubstring, "signal 1 (SIGHUP) received")
+				So(output, ShouldNotContainSubstring, "signal 1 (SIGHUP) received")
 
 				output, _ = runCommand("docker logs gubed-xnign")
-				So(output, ShouldNotContainSubstring, "signal 1 (SIGHUP) received")
+				So(output, ShouldContainSubstring, "signal 1 (SIGHUP) received")
 			})
 		})
 

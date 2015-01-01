@@ -23,10 +23,10 @@ func TestPrintProgramVersion(t *testing.T) {
 				So(outBuf.String(), ShouldEqual, version+"\n")
 			})
 		})
-	})
 
-	// Reset
-	versionFlag = false
+		// Reset
+		versionFlag = false
+	})
 }
 
 // Prerequisites for TestReloadContainers
@@ -59,19 +59,36 @@ func (m mockDockerClient) ListContainers(options docker.ListContainersOptions) (
 }
 
 func TestReloadContainers(t *testing.T) {
-	// Redirect stdout
-	outBuf := &bytes.Buffer{}
-	stdout = outBuf
-
 	Convey("Given two Docker containers named nginx-debug and gubed-xnign", t, func() {
+		// Redirect stdout
+		outBuf := &bytes.Buffer{}
+		stdout = outBuf
 
-		Convey("When reloadContainers() is called", func() {
+		Convey("When reloadContainers() is called and no command line flags were set", func() {
 			reloadContainers(mockDockerClient{})
 
-			Convey("nginx-debug should be reloaded, gubed-xnign should not", func() {
+			Convey("nginx-debug should be reloaded, but gubed-xnign should not", func() {
 				So(reloadedContainers, ShouldResemble, []string{"container1"})
 				So(outBuf.String(), ShouldEqual, "Sent SIGHUP signal to nginx-debug (container1)\n")
 			})
+		})
+
+		Convey("When reloadContainers() is called and the command line flag --fragment=xnign was set", func() {
+			fragment = "xnign"
+			reloadContainers(mockDockerClient{})
+
+			Convey("nginx-debug should not be reloaded, but gubed-xnign should", func() {
+				So(reloadedContainers, ShouldResemble, []string{"container2"})
+				So(outBuf.String(), ShouldEqual, "Sent SIGHUP signal to gubed-xnign (container2)\n")
+			})
+
+			// Reset
+			fragment = ""
+		})
+
+		Reset(func() {
+			// This reset is run after each `Convey` at the same scope.
+			reloadedContainers = []string{}
 		})
 	})
 }
