@@ -1,7 +1,23 @@
 sudo: false # Run on the new AWS/Docker-based Travis CI infrastructure
+
 language: go
+
 go:
-  - 1.4
+- 1.4
+- tip
 
 before_install:
-  - go get -v github.com/docker/docker/pkg/units  # Travis wants this package, for whatever reason ...
+# Travis wants this package, for whatever reason ...
+- go get -v github.com/docker/docker/pkg/units
+
+# coveralls.io
+- go get github.com/axw/gocov/gocov
+- go get github.com/mattn/goveralls
+- if ! go get code.google.com/p/go.tools/cmd/cover; then go get golang.org/x/tools/cmd/cover; fi
+
+script:
+- $HOME/gopath/bin/goveralls -repotoken $COVERALLS_TOKEN
+
+env:
+  global:
+    secure: Sm1Iv2tNqbbW6BKNBzm7jc2LtSs3xecFMTjVrnNePuUmTgw6uR6oZ1XEmCLKmICkrVovxqc2HJbhX5k3Gyq/SbITIjONXXCOTb9R7zRamhx1ncn8x5fiZC8w/UF9WhsUaM5LHosW27BP7d1k+oKLusIoIK1wuUOtv7DjhtqJnKU=
