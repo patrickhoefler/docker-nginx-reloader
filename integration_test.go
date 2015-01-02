@@ -53,7 +53,7 @@ func TestIntegrationWithDockerClient(t *testing.T) {
 		})
 
 		Convey("When docker-nginx-reloader is run with the command line flag --fragment=xnign", func() {
-			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader /docker-nginx-reloader --fragment=xnign")
+			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader --fragment=xnign")
 
 			Convey("nginx-debug should not be reloaded, but gubed-xnign should", func() {
 				output, _ := runCommand("docker logs nginx-debug")
