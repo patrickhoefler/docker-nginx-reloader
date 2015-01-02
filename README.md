@@ -9,6 +9,11 @@ Send a SIGHUP signal to Docker containers without knowing their exact name. Espe
 
 Let's say that in your local Docker instance you have two running nginx containers called `dev-nginx` and `test-nginx`. If you run `docker-nginx-reloader` without any command line flags, both nginx containers will receive a SIGHUP signal and the contained nginx instances will reload. If you run `docker-nginx-reloader --fragment=dev`, only the `dev-nginx` instance will be reloaded.
 
+## Download
+
+- [Linux (64bit)](https://github.com/patrickhoefler/docker-nginx-reloader/releases/download/v0.1.0/docker-nginx-reloader_linux_amd64.zip)
+- [Mac (64bit)](https://github.com/patrickhoefler/docker-nginx-reloader/releases/download/v0.1.0/docker-nginx-reloader_mac_amd64.zip)
+
 ## Usage
 
 ```
