@@ -40,7 +40,7 @@ func TestIntegrationWithDockerClient(t *testing.T) {
 		runCommand("docker run --name=nginx-debug --detach patrickhoefler/nginx-debug")
 		runCommand("docker run --name=gubed-xnign --detach patrickhoefler/nginx-debug")
 
-		Convey("When docker-nginx-reloader is run without any command line flags", func() {
+		Convey("When docker-nginx-reloader is run with no command line flags", func() {
 			runCommand("docker run --rm -v /var/run/docker.sock:/var/run/docker.sock patrickhoefler/docker-nginx-reloader")
 
 			Convey("nginx-debug should be reloaded, but gubed-xnign should not", func() {

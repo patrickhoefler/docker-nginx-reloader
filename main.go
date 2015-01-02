@@ -11,18 +11,42 @@ import (
 )
 
 const (
-	version = "0.1.0-beta3"
+	version = "0.1.0" // Program version
+
+	exitOK  = 0 // Terminate without error
+	exitErr = 1 // Terminate with error
 )
 
 var (
 	// Flags
-	host        string
-	fragment    string
-	versionFlag bool
+	host        string // Docker host
+	fragment    string // Search string for reloading the right Docker containers
+	versionFlag bool   // If true, only print the program version and exit
 
-	// Used for testing
-	stdout io.Writer = os.Stdout
+	// Global functions for unit testing
+	newDockerClient newDockerManager = func(host string) (dockerManager, error) { return docker.NewClient(host) }
+	exit            exiter           = func(code int) { os.Exit(code) }
+	stdout          io.Writer        = os.Stdout
+	stderr          io.Writer        = os.Stderr
 )
+
+// Takes care of exiting the program
+type exiter func(code int)
+
+// Defines the condition of the program exit
+type exitCondition struct {
+	code int
+	err  error
+}
+
+// Function type for newDockerClient
+type newDockerManager func(host string) (dockerManager, error)
+
+// Interface for dockerClient
+type dockerManager interface {
+	ListContainers(docker.ListContainersOptions) ([]docker.APIContainers, error)
+	KillContainer(docker.KillContainerOptions) error
+}
 
 func init() {
 	// Flags
@@ -32,44 +56,32 @@ func init() {
 }
 
 func main() {
+	defer handleExit() // Graceful and testable exit
+
 	flag.Parse()
 
 	// Does the user only want the version?
 	if versionFlag {
 		fmt.Fprintln(stdout, version)
-	} else {
-
-		// Get a Docker client
-		client, err := docker.NewClient(host)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-
-		// Reload the matching containers
-		reloadContainers(client)
+		panic(exitCondition{exitOK, nil})
 	}
-}
 
-type dockerManager interface {
-	ListContainers(docker.ListContainersOptions) ([]docker.APIContainers, error)
-	KillContainer(docker.KillContainerOptions) error
-}
-
-func reloadContainers(client dockerManager) {
-	// Get a list of all running Docker containers
-	containers, err := client.ListContainers(docker.ListContainersOptions{})
+	// Get a Docker client
+	dockerClient, err := newDockerClient(host)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		panic(exitCondition{exitErr, err})
+	}
+
+	// Get a list of all running Docker containers
+	containers, err := dockerClient.ListContainers(docker.ListContainersOptions{})
+	if err != nil {
+		panic(exitCondition{exitErr, err})
 	}
 
 	for _, container := range containers {
-
 		for _, containerName := range container.Names {
-
 			if strings.Index(containerName, fragment) >= 0 {
-				client.KillContainer(
+				dockerClient.KillContainer(
 					docker.KillContainerOptions{
 						ID:     container.ID,
 						Signal: docker.SIGHUP,
@@ -82,6 +94,21 @@ func reloadContainers(client dockerManager) {
 					container.ID,
 				)
 			}
+		}
+	}
+}
+
+func handleExit() {
+	// Recover the thrown panic
+	if err := recover(); err != nil {
+		// Check if the panic was thrown by us
+		if p, ok := err.(exitCondition); ok {
+			// If there was an error, print it
+			if p.code == exitErr {
+				fmt.Fprintln(stderr, p.err)
+			}
+			// Terminate the program with the appropriate exit code
+			exit(p.code)
 		}
 	}
 }
